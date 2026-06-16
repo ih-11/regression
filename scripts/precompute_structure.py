@@ -56,9 +56,10 @@ def safe_float(x, default=0.0):
     try:
         if x is None:
             return default
-        if np.isnan(x):
+        x = float(x)
+        if not np.isfinite(x):
             return default
-        return float(x)
+        return x
     except Exception:
         return default
 
@@ -449,7 +450,7 @@ def eval_region_structure(seq, region, temperature=None):
     try:
         mfe_freq = safe_float(fc.pr_structure(mfe_struct))
     except Exception:
-        mfe_freq = 0.0
+        mfe_freq = np.nan
 
     try:
         ediv = safe_float(fc.mean_bp_distance())
@@ -735,7 +736,7 @@ def main(
 
                 if i % 100 == 0 or i == len(rows):
                     logger.info("completed %s / %s", i, len(rows))
-                    
+
     feature_df = pd.DataFrame(feature_rows)
 
     out_df = pd.concat(
