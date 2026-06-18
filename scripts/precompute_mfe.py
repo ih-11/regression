@@ -86,29 +86,29 @@ def main(input_file, output_file, temperature, n_workers, force=False):
 
     out_df = df[["var_id", "trans_id", "gene_id"]].copy()
 
-    logger.info("calculating MFE.5'UTR")
-    out_df["MFE.5'UTR"] = parallel_calc_mfe(
+    logger.info("calculating 5'UTR.MFE")
+    out_df["5'UTR.MFE"] = parallel_calc_mfe(
         df["5'UTR"].tolist(),
         temperature,
         n_workers,
     )
 
-    logger.info("calculating MFE.CDS")
-    out_df["MFE.CDS"] = parallel_calc_mfe(
+    logger.info("calculating CDS.MFE")
+    out_df["CDS.MFE"] = parallel_calc_mfe(
         df["CDS"].tolist(),
         temperature,
         n_workers,
     )
 
-    logger.info("calculating MFE.3'UTR")
-    out_df["MFE.3'UTR"] = parallel_calc_mfe(
+    logger.info("calculating 3'UTR.MFE")
+    out_df["3'UTR.MFE"] = parallel_calc_mfe(
         df["3'UTR"].tolist(),
         temperature,
         n_workers,
     )
 
-    logger.info("calculating MFE.mRNA")
-    out_df["MFE.mRNA"] = parallel_calc_mfe(
+    logger.info("calculating mRNA.MFE")
+    out_df["mRNA.MFE"] = parallel_calc_mfe(
         mrna_list,
         temperature,
         n_workers,
