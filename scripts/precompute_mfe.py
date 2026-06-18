@@ -42,7 +42,10 @@ def parallel_calc_mfe(seq_list, temperature, n_workers):
             for i, seq in enumerate(seq_list)
         }
 
-        for n_done, future in enumerate(concurrent.futures.as_completed(future_to_idx), start=1):
+        for n_done, future in enumerate(
+            concurrent.futures.as_completed(future_to_idx),
+            start=1,
+        ):
             i = future_to_idx[future]
             mfe_list[i] = future.result()
 
@@ -52,12 +55,14 @@ def parallel_calc_mfe(seq_list, temperature, n_workers):
     return mfe_list
 
 
-def main(input_file, output_file, temperature, n_workers):
+def main(input_file, output_file, temperature, n_workers, force=False):
     input_file = Path(input_file)
     output_file = Path(output_file)
 
-    if output_file.exists():
+    if output_file.exists() and not force:
         raise FileExistsError(f"Output file already exists: {output_file}")
+
+    output_file.parent.mkdir(parents=True, exist_ok=True)
 
     logger.info("loading input: %s", input_file)
 
@@ -82,16 +87,32 @@ def main(input_file, output_file, temperature, n_workers):
     out_df = df[["var_id", "trans_id", "gene_id"]].copy()
 
     logger.info("calculating MFE.5'UTR")
-    out_df["MFE.5'UTR"] = parallel_calc_mfe(df["5'UTR"].tolist(), temperature, n_workers)
+    out_df["MFE.5'UTR"] = parallel_calc_mfe(
+        df["5'UTR"].tolist(),
+        temperature,
+        n_workers,
+    )
 
     logger.info("calculating MFE.CDS")
-    out_df["MFE.CDS"] = parallel_calc_mfe(df["CDS"].tolist(), temperature, n_workers)
+    out_df["MFE.CDS"] = parallel_calc_mfe(
+        df["CDS"].tolist(),
+        temperature,
+        n_workers,
+    )
 
     logger.info("calculating MFE.3'UTR")
-    out_df["MFE.3'UTR"] = parallel_calc_mfe(df["3'UTR"].tolist(), temperature, n_workers)
+    out_df["MFE.3'UTR"] = parallel_calc_mfe(
+        df["3'UTR"].tolist(),
+        temperature,
+        n_workers,
+    )
 
     logger.info("calculating MFE.mRNA")
-    out_df["MFE.mRNA"] = parallel_calc_mfe(mrna_list, temperature, n_workers)
+    out_df["MFE.mRNA"] = parallel_calc_mfe(
+        mrna_list,
+        temperature,
+        n_workers,
+    )
 
     logger.info("writing output: %s", output_file)
     sylib.fileio.write_df(out_df, str(output_file), index=False)
@@ -108,6 +129,7 @@ def parse_args():
     parser.add_argument("output_file")
     parser.add_argument("--temperature", type=float, required=True)
     parser.add_argument("-p", "--n-workers", type=int, default=1)
+    parser.add_argument("--force", action="store_true")
 
     return parser.parse_args()
 
@@ -125,4 +147,5 @@ if __name__ == "__main__":
         output_file=args.output_file,
         temperature=args.temperature,
         n_workers=args.n_workers,
+        force=args.force,
     )
